@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+<!-- Load the Paper.js library -->
+<script type="text/javascript" src="paperjs/dist/paper-full.js"></script>
+<!-- javascript -->
+
+</head>
+<body>
+  <input id="dot_frequency" type="range" min = '30' max = '2000' step='30'></input>
+	<input id="line_frequency" type="range" min = '10' max = '550' step='5'></input>
+	<canvas id="myCanvas" resize="true"></canvas>
+</body>
+<script>
+	var size = 100 + Math.random()*50;
+	var dot_density = 1015;
+	var line_density = 280;
+
+	window.onload = function() {
+		window.redraw();
+	};
+
+	document.querySelector('#dot_frequency').addEventListener('input', function(e, i){
+	  dot_density = document.querySelector('#dot_frequency').value;
+	  window.redraw();
+	});
+
+	document.querySelector('#line_frequency').addEventListener('input', function(e, i){
+	  line_density = document.querySelector('#line_frequency').value;
+	  window.redraw();
+	});
+
+</script>
+<!-- Define inlined PaperScript associate it with myCanvas -->
+<script type="text/paperscript" canvas="myCanvas">
+
+window.redraw = redraw;
+
+function redraw() {
+  //Remove previous drawing
+	paper.project.activeLayer.removeChildren();
+	var x = 400;
+	var y = 300;
+  var minLineLength = 10;
+
+//Code for drawing the lines that come out of the circle.
+//Each line starts in the center of the circle and is drawn outward
+	for (var i=0; i < line_density; i++) {
+		var path = new Path();
+		path.strokeColor = 'black';
+		path.add(new Point(x, y));
+		var plusOrMinusLine = Math.random() < 0.5 ? -1 : 1;
+		var lineLength = size + minLineLength + Math.random()*size
+		var linex = (lineLength - Math.random()* lineLength) * plusOrMinusLine;
+		plusOrMinusLine = Math.random() < 0.5 ? -1 : 1;
+		var liney = Math.sqrt(Math.pow(lineLength, 2) - Math.pow(linex, 2)) * plusOrMinusLine;
+		path.add(new Point(x+linex, y+liney));
+
+	}
+
+//Code for drawing the circle
+	var myCircle = new Path.Circle(new Point(x, y), size);
+	myCircle.strokeColor = 'black';
+	myCircle.fillColor = 'white';
+
+
+//Code for creating and dispersing the dots
+	for (var j=0; j < dot_density; j++) {
+		notWithinCircle = true;
+		while (notWithinCircle) {
+			var plusOrMinusDots = Math.random() < 0.5 ? -1 : 1;
+			var xDot = Math.random()*plusOrMinusDots*size;
+			plusOrMinusDots = Math.random() < 0.5 ? -1 : 1;
+			var yDot = Math.random()*plusOrMinusDots*size;
+			if (Math.sqrt(Math.pow(xDot, 2) + Math.pow(yDot, 2)) < size-2) {
+				var circ = new Path.Circle(new Point(x + xDot, y + yDot), 2);
+				circ.fillColor = 'red';
+				notWithinCircle = false;
+			}
+		}
+	}
+
+}
+</script>
+<style type="text/css">
+html,
+body {
+    margin: 0;
+    overflow: hidden;
+    height: 100%;
+}
+
+/* Otherwise parts of the image were cut-off*/
+canvas[resize] {
+    width: 100%;
+    height: 100%;
+}
+</style>
+</html>
