@@ -1,99 +1,84 @@
 <!DOCTYPE html>
 <html>
-<head>
-<!-- Load the Paper.js library -->
-<script type="text/javascript" src="paperjs/dist/paper-full.js"></script>
-<!-- javascript -->
 
+<head>
 </head>
+
 <body>
-  <input id="dot_frequency" type="range" min = '30' max = '2000' step='30'></input>
-	<input id="line_frequency" type="range" min = '10' max = '550' step='5'></input>
-	<canvas id="myCanvas" resize="true"></canvas>
+  <input id="dot_frequency" type="range" min='30' max='2000' step='30'></input>
+  <input id="line_frequency" type="range" min='10' max='550' step='5'></input>
+  <button id="new">Generate new exemplar</button>
+  <div id="stim_target">
+  </div>
 </body>
 <script>
-	var size = 100 + Math.random()*50;
-	var dot_density = 1015;
-	var line_density = 280;
+  var size = 100;
+  var dot_density = 1015;
+  var line_density = 280;
 
-	window.onload = function() {
-		window.redraw();
-	};
+  window.onload = function() {
+    draw();
+  };
 
-	document.querySelector('#dot_frequency').addEventListener('input', function(e, i){
-	  dot_density = document.querySelector('#dot_frequency').value;
-	  window.redraw();
-	});
+  document.querySelector('#dot_frequency').addEventListener('input', function(e, i) {
+    dot_density = document.querySelector('#dot_frequency').value;
+    draw();
+  });
 
-	document.querySelector('#line_frequency').addEventListener('input', function(e, i){
-	  line_density = document.querySelector('#line_frequency').value;
-	  window.redraw();
-	});
+  document.querySelector('#line_frequency').addEventListener('input', function(e, i) {
+    line_density = document.querySelector('#line_frequency').value;
+    draw();
+  });
 
+  document.querySelector('#new').addEventListener('click', function(){
+    draw();
+  })
+
+  function draw() {
+    // params
+    var w = 400;
+    var r = 100;
+    var x = w / 2;
+    var y = w / 2;
+    var circle_r = 2;
+    var minLineLength = 10;
+
+    // svg string
+    var str = '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + w + '">'
+
+    //Code for drawing the lines that come out of the circle.
+    //Each line starts in the center of the circle and is drawn outward
+    for (var i = 0; i < line_density; i++) {
+      var angle = Math.random() * Math.PI / 2;
+      var lineLength = r + minLineLength + (r - minLineLength) * Math.random();
+      var x2 = Math.cos(angle) * lineLength;
+      var y2 = Math.sin(angle) * lineLength;
+      if (Math.random() < 0.5) {
+        x2 = -x2;
+      }
+      if (Math.random() < 0.5) {
+        y2 = -y2;
+      }
+      x2 = x + x2;
+      y2 = y + y2;
+      str += '<line x1="' + x + '" y1="' + y + '" x2="' + x2 + '" y2="' + y2 + '" style="stroke:rgb(255,0,0); stroke-width:1;" />';
+    }
+
+    // draw circle
+    str += '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" style="stroke:rgb(255,0,0); stroke-width:2; fill: rgb(255,255,255);"/>'
+
+    //Code for creating and dispersing the dots
+    for (var j = 0; j < dot_density; j++) {
+      do {
+        var x2 = Math.random() * 2 * r + x - r;
+        var y2 = Math.random() * 2 * r + y - r;
+      } while ((Math.pow(x - x2, 2) + Math.pow(y - y2, 2)) > Math.pow(r - circle_r - 2, 2));
+      str += '<circle cx="' + x2 + '" cy="' + y2 + '" r="' + circle_r + '" style="fill:rgb(255,0,0);" />';
+    }
+
+    str += "</svg>";
+    document.querySelector('#stim_target').innerHTML = str;
+  }
 </script>
-<!-- Define inlined PaperScript associate it with myCanvas -->
-<script type="text/paperscript" canvas="myCanvas">
 
-window.redraw = redraw;
-
-function redraw() {
-  //Remove previous drawing
-	paper.project.activeLayer.removeChildren();
-	var x = 400;
-	var y = 300;
-  var minLineLength = 10;
-
-//Code for drawing the lines that come out of the circle.
-//Each line starts in the center of the circle and is drawn outward
-	for (var i=0; i < line_density; i++) {
-		var path = new Path();
-		path.strokeColor = 'black';
-		path.add(new Point(x, y));
-		var plusOrMinusLine = Math.random() < 0.5 ? -1 : 1;
-		var lineLength = size + minLineLength + Math.random()*size
-		var linex = (lineLength - Math.random()* lineLength) * plusOrMinusLine;
-		plusOrMinusLine = Math.random() < 0.5 ? -1 : 1;
-		var liney = Math.sqrt(Math.pow(lineLength, 2) - Math.pow(linex, 2)) * plusOrMinusLine;
-		path.add(new Point(x+linex, y+liney));
-
-	}
-
-//Code for drawing the circle
-	var myCircle = new Path.Circle(new Point(x, y), size);
-	myCircle.strokeColor = 'black';
-	myCircle.fillColor = 'white';
-
-
-//Code for creating and dispersing the dots
-	for (var j=0; j < dot_density; j++) {
-		notWithinCircle = true;
-		while (notWithinCircle) {
-			var plusOrMinusDots = Math.random() < 0.5 ? -1 : 1;
-			var xDot = Math.random()*plusOrMinusDots*size;
-			plusOrMinusDots = Math.random() < 0.5 ? -1 : 1;
-			var yDot = Math.random()*plusOrMinusDots*size;
-			if (Math.sqrt(Math.pow(xDot, 2) + Math.pow(yDot, 2)) < size-2) {
-				var circ = new Path.Circle(new Point(x + xDot, y + yDot), 2);
-				circ.fillColor = 'red';
-				notWithinCircle = false;
-			}
-		}
-	}
-
-}
-</script>
-<style type="text/css">
-html,
-body {
-    margin: 0;
-    overflow: hidden;
-    height: 100%;
-}
-
-/* Otherwise parts of the image were cut-off*/
-canvas[resize] {
-    width: 100%;
-    height: 100%;
-}
-</style>
 </html>
