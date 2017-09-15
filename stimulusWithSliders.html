@@ -5,28 +5,31 @@
 </head>
 
 <body>
-  <input id="dot_frequency" type="range" min='30' max='2000' step='30'></input>
-  <input id="line_frequency" type="range" min='10' max='550' step='5'></input>
+  <input id="dot_frequency" type="range" min='0' max='1' step='0.01'></input>
+  <input id="line_frequency" type="range" min='0' max='1' step='0.01'></input>
   <button id="new">Generate new exemplar</button>
   <div id="stim_target">
   </div>
 </body>
 <script>
-  var size = 100;
-  var dot_density = 1015;
-  var line_density = 280;
+  var min_dot_density = 100;
+  var max_dot_density = 2000;
+  var min_line_density = 30;
+  var max_line_density = 550;
+  var dim_a = 0.5;
+  var dim_b = 0.5;
 
   window.onload = function() {
     draw();
   };
 
   document.querySelector('#dot_frequency').addEventListener('input', function(e, i) {
-    dot_density = document.querySelector('#dot_frequency').value;
+    dim_a = document.querySelector('#dot_frequency').value;
     draw();
   });
 
   document.querySelector('#line_frequency').addEventListener('input', function(e, i) {
-    line_density = document.querySelector('#line_frequency').value;
+    dim_b = document.querySelector('#line_frequency').value;
     draw();
   });
 
@@ -34,7 +37,7 @@
     draw();
   })
 
-  function draw() {
+  function generate_stim(dot_dim, line_dim){
     // params
     var w = 400;
     var r = 100;
@@ -42,6 +45,8 @@
     var y = w / 2;
     var circle_r = 2;
     var minLineLength = 10;
+    var dot_density = min_dot_density + (max_dot_density-min_dot_density)*dot_dim;
+    var line_density = min_line_density + (max_line_density-min_line_density)*line_dim;
 
     // svg string
     var str = '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + w + '">'
@@ -77,6 +82,12 @@
     }
 
     str += "</svg>";
+
+    return str;
+  }
+
+  function draw() {
+    var str = generate_stim(dim_a, dim_b);
     document.querySelector('#stim_target').innerHTML = str;
   }
 </script>
